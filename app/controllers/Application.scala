@@ -67,6 +67,8 @@ class Application @Inject()(wSClient: WSClient)(implicit ec: ExecutionContext) e
       println(str)
       str
     }
+    println("sleeping in timeline. just to demonstrate that no ticks are produced yet")
+    Thread.sleep(3000)
     Ok.chunked(value.limit(2))    //this activates the source, emitting periodic random json strings. But only the first two are send to the client
 
     //I see about 4-5 ticks produced. not sure what cancels it
