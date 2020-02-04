@@ -2,26 +2,51 @@
 
 @main("Mixed Tweets") {
 
-  <h2>Live mixed-tweets</h2>
-  <p>Change URL parameters for new search</p>
+<h2>Live mixed-tweets</h2>
+<p>Change URL parameters for new search</p>
 
 
-  @queries.zipWithIndex.map { case(value, index) =>
-    <h3> <span id="message@index"></span> </h3>
-  }
+@queries.zipWithIndex.map { case(value, index) =>
+<h3> <span id="message@index"></span> </h3>
+}
 
-  <script type="text/javascript" charset="utf-8">
-    var feed = new EventSource("@routes.Application.mixedStream(queries.mkString(","))");
-      console.log("feed", feed);
-      feed.addEventListener('message', function(event) {
-        console.log(event);
-        var result  = jQuery.parseJSON(event.data);
-        console.log(result);
+<script type="text/javascript" charset="utf-8">
+//  The javascript EventSource object is used to receive server-sent event notifications:
+// http://localhost:9000/liveTouits?queries=Franz&queries=Marga&queries=Vincent
+//the event stream is created when the EventSource object is instantiated. Instantiation involves sending the mixedStream http request to the server
+//Server responds with server events like {searchQuery: "Franz", msg: "Well done Franz", autor: "Bob"}
+//When the server sends no more server events, the mixedStream request is sent again
+
+    var eventStream = new EventSource("@routes.Application.mixedStream(queries.mkString(","))");
+      console.log("eventStream", eventStream);
+      eventStream.addEventListener('message', function(event) {
+        console.log("event: " + event);
+        var tweetInfo  = jQuery.parseJSON(event.data);    //"""{"searchQuery": "Marga", "msg": "I love Marga", "autor": "John"}
+        console.log(tweetInfo);
         @queries.zipWithIndex.map { case(value, index) =>
-        if(result.searchQuery === "@value"){
-          $('#message@index').html(result.searchQuery + " : " + result.message + " -" + result.author)
+        if(tweetInfo.searchQuery === "@value"){
+          $('#message@index').html("keyword=" + tweetInfo.searchQuery + ": " + tweetInfo.msg + " -" + tweetInfo.autor)
         }
       }
     }, false);
+
+//Stop the event stream after 30seconds. if we do not close the EventSource from the browser new requests will be made every time the server stream stops
+//Once we close:
+//  1) no more mixedStream requests are made
+//  2) the server sends the remaining events from the last request and then stops sending any further events
+//  TODO handle close events from browser explicitely on server; handle close events from server in browser;
+//https://medium.com/conectric-networks/a-look-at-server-sent-events-54a77f8d6ff7
+
+    setTimeout(function(){
+
+        alert('closing EventSource from browser');
+        eventStream.close();
+    }, 30000);
+
+//About setTimeout and the nature of Javascript:
+/*
+The function assigned to the setTimeout is put onto an event queue. JavaScript is inherently single-threaded. If there’s at least one event on the queue that’s eligible to “fire” (like a 3000ms timeout that was set 4000ms ago), the "javascript VM" will pick one and call its handler (function callback). The point is that the actual call will unlikely be precisely when you requested it (say 3000 milliseconds later), it might be 3001, 3002 or even quite a bit later depending on number and nature of other events on the queue, & the duration of their callbacks.
+https://stackoverflow.com/questions/1141302/is-there-a-sleep-function-in-javascript/1141340
+*/
   </script>
 }
