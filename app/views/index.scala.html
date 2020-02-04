@@ -19,7 +19,7 @@
 
     var eventStream = new EventSource("@routes.Application.mixedStream(queries.mkString(","))");
       console.log("eventStream", eventStream);
-      eventStream.addEventListener('message', function(event) {
+      eventStream.onmessage = (event) => {
         console.log("event: " + event);
         var tweetInfo  = jQuery.parseJSON(event.data);    //"""{"searchQuery": "Marga", "msg": "I love Marga", "autor": "John"}
         console.log(tweetInfo);
@@ -28,7 +28,7 @@
           $('#message@index').html("keyword=" + tweetInfo.searchQuery + ": " + tweetInfo.msg + " -" + tweetInfo.autor)
         }
       }
-    }, false);
+    };
 
 //Stop the event stream after 30seconds. if we do not close the EventSource from the browser new requests will be made every time the server stream stops
 //Once we close:
