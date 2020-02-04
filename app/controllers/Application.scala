@@ -82,7 +82,7 @@ class Application @Inject()(wSClient: WSClient)(implicit ec: ExecutionContext) e
     * Sends JsValues as Server Sent Events to the client
     *
     * example:
-    * http://localhost:9000/mixedStream?queries=a&queries=b
+    * http://localhost:9000/mixedStream?queries=a,b
 data: {"searchQuery":"a","msg":"You're an ace a","autor":"Joe"}
 
 data: {"searchQuery":"a","msg":"Well done a","autor":"Bob"}
