@@ -114,6 +114,9 @@ data: {"searchQuery":"a","msg":"I love a","autor":"Joe"}
     val source: Source[StreamedResponse, NotUsed] = Source.fromFuture(eventualStreamedResponse)
     //Turn concatenated bodies into continuous stream of ByteStrings
     val twitterBodySource: Source[ByteString, NotUsed] = source.flatMapConcat((r: StreamedResponse) => r.body)
+    //now parse the body using Akka Streams
+    //Why? because the body here might be too large to fit in memory as a whole
+    //compare to body parser using Akka Streams of body containing CSV lines in https://www.playframework.com/documentation/2.8.x/ScalaBodyParsers
     twitterBodySource
       .via(framing)   //split stream of ByteString on line breaks
       .map { byteString =>      //parse and transform
